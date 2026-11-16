@@ -1,0 +1,5 @@
+count-files (1.0-3) noble; urgency=medium
+
+  * Bump version for PPA upload.
+
+ -- Artem Puguch <artempuguch9@gmail.com>  Sun, 15 Nov 2026 22:11:00 +0200
