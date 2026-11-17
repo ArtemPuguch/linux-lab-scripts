@@ -19,11 +19,9 @@ in the /etc directory, excluding directories and symbolic links. It also support
 %setup -q
 
 %install
-# Створення бінарної директорії
 mkdir -p %{buildroot}%{_bindir}
 install -m 755 count_files.sh %{buildroot}%{_bindir}/count_files
 
-# 1. Додавання man-сторінки
 mkdir -p %{buildroot}%{_mandir}/man1
 cat << 'EOF' > %{buildroot}%{_mandir}/man1/count_files.1
 .TH COUNT_FILES 1 "November 2026" "1.0" "User Commands"
@@ -40,16 +38,13 @@ Configuration file for specifying custom target directories.
 Artem Puguch
 EOF
 
-# 2. Створення конфігураційного файлу у /etc
 mkdir -p %{buildroot}%{_sysconfdir}
 echo "TARGET_DIR=/etc" > %{buildroot}%{_sysconfdir}/count-files.conf
 
 %pre
-# Дії перед встановленням
 echo "[INFO] Preparing to install count-files package..."
 
 %post
-# Дії після встановлення
 echo "[INFO] Package count-files successfully installed!"
 if [ -f %{_sysconfdir}/count-files.conf ]; then
     echo "[INFO] Configuration file created at %{_sysconfdir}/count-files.conf"
