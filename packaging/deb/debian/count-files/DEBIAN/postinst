@@ -1,7 +1,0 @@
-#!/bin/sh
-set -e
-if [ "$1" = "configure" ]; then
-    echo "Пакет count-files успішно встановлено!"
-fi
-deb-systemd-helper update-state count-files.service >/dev/null || true
-exit 0

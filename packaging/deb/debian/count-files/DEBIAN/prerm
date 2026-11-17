@@ -1,6 +1,0 @@
-#!/bin/sh
-set -e
-if [ "$1" = "remove" ]; then
-    echo "Видалення пакета count-files..."
-fi
-exit 0
