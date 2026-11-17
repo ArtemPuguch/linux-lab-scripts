@@ -1,10 +1,10 @@
 Source: count-files
 Section: utils
 Priority: optional
-Maintainer: Artem Puguch <artempuguch9@gmail.com>
+Maintainer: Puguch Artem <artempuguch9@gmail.com>
 Build-Depends: debhelper-compat (= 13)
 Standards-Version: 4.5.1
-Homepage: https://github.com/ArtemPuguch/lab5
+Homepage: https://github.com/ArtemPuguch/linux-lab-scripts
 
 Package: count-files
 Architecture: all
