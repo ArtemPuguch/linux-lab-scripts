@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  jenkins-master:
+    build: ./jenkins/master
+    container_name: jenkins-master
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - /home/artwolf/jenkins-data:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - jenkins-net
+
+  jenkins-agent:
+    build: ./jenkins/agent
+    container_name: jenkins-agent
+    depends_on:
+      - jenkins-master
+    environment:
+      - JENKINS_URL=http://jenkins-master:8080
+      - JENKINS_AGENT_NAME=agent-1
+      - JENKINS_SECRET=4615dac66d643a45a50c713540c195b6273c3ebb629e8805b8c18885a97cb786
+      - JENKINS_WEB_SOCKET=true
+    networks:
+      - jenkins-net
+
+  jenkins-agent-cpp:
+    build: ./jenkins/agent-cpp
+    container_name: jenkins-agent-cpp
+    depends_on:
+      - jenkins-master
+    environment:
+      - JENKINS_URL=http://jenkins-master:8080
+      - JENKINS_AGENT_NAME=agent-cpp
+      - JENKINS_SECRET=a0480c445be7d3fa20f2bcea24aaa2ec2b90120ccc083a402a7ab95cf39c4f9b
+      - JENKINS_WEB_SOCKET=true
+    networks:
+      - jenkins-net
+
+  jenkins-agent-rpm:
+    build: ./jenkins/agent-rpm
+    container_name: jenkins-agent-rpm
+    depends_on:
+      - jenkins-master
+    environment:
+      - JENKINS_URL=http://jenkins-master:8080
+      - JENKINS_AGENT_NAME=agent-rpm
+      - JENKINS_SECRET=e5484e486bc4f2833f6fa106d96049be893f4eb69cf9be2417282d3e12991264
+      - JENKINS_WEB_SOCKET=true
+    networks:
+      - jenkins-net
+
+  nginx:
+    image: nginx:alpine
+    container_name: jenkins-nginx
+    depends_on:
+      - jenkins-master
+    ports:
+      - "443:443"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    networks:
+      - jenkins-net
+
+networks:
+  jenkins-net:
+    driver: bridge

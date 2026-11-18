@@ -6,3 +6,13 @@
 .vscode/
 build/
 dist/
+.env
+# SSL certificates and private keys
+nginx/certs/*.key
+nginx/certs/*.crt
+
+# Jenkins backups
+jenkins-backups/
+*.tar.gz
+backup.log
+docker-compose.yml
