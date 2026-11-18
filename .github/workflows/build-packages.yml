@@ -1,18 +1,53 @@
+
 name: Build Packages
 
 on:
   push:
     branches: [ main ]
+    tags: [ 'v*' ]
   pull_request:
     branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
-  build-rpm:
+
+  # 1. Тестування скрипта
+  test:
     runs-on: ubuntu-latest
-    container: fedora:latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check script
+        run: |
+          test -f count_files.sh
+          bash -n count_files.sh
+          echo "Script test passed!"
+
+  # 2. Збірка RPM для різних версій Fedora
+  build-rpm:
+    needs: test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        fedora-version: [ "44", "45" ]
+
+    container: fedora:${{ matrix.fedora-version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Cache DNF packages
+        uses: actions/cache@v4
+        with:
+          path: /var/cache/dnf
+          key: fedora-${{ matrix.fedora-version }}-${{ hashFiles('packaging/rpm/count-files.spec') }}
+          restore-keys: |
+            fedora-${{ matrix.fedora-version }}-
 
       - name: Install build tools
         run: |
@@ -37,18 +72,35 @@ jobs:
       - name: Upload RPM artifact
         uses: actions/upload-artifact@v4
         with:
-          name: rpm-package
-          path: ~/rpmbuild/RPMS/noarch/*.rpm
+          name: rpm-package-fedora-${{ matrix.fedora-version }}
+          path: /root/rpmbuild/RPMS/noarch/*.rpm
 
+  # 3. Збірка DEB для різних версій Ubuntu
   build-deb:
+    needs: test
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ubuntu-version: [ "22.04", "24.04" ]
+
+    container: ubuntu:${{ matrix.ubuntu-version }}
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Cache APT packages
+        uses: actions/cache@v4
+        with:
+          path: /var/cache/apt/archives
+          key: ubuntu-${{ matrix.ubuntu-version }}-${{ hashFiles('packaging/deb/debian/control') }}
+          restore-keys: |
+            ubuntu-${{ matrix.ubuntu-version }}-
 
       - name: Install build tools
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential debhelper devscripts
+          apt-get update
+          apt-get install -y build-essential debhelper devscripts
 
       - name: Prepare build directory
         run: |
@@ -65,5 +117,23 @@ jobs:
       - name: Upload DEB artifact
         uses: actions/upload-artifact@v4
         with:
-          name: deb-package
+          name: deb-package-ubuntu-${{ matrix.ubuntu-version }}
           path: build/*.deb
+
+  # 4. Створення GitHub Release
+  release:
+    needs: [ build-rpm, build-deb ]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all packages
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/**/*
+          generate_release_notes: true
