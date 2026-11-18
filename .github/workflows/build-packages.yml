@@ -14,7 +14,6 @@ permissions:
 
 jobs:
 
-  # 1. Тестування скрипта
   test:
     runs-on: ubuntu-latest
     steps:
@@ -27,7 +26,6 @@ jobs:
           bash -n count_files.sh
           echo "Script test passed!"
 
-  # 2. Збірка RPM для різних версій Fedora
   build-rpm:
     needs: test
     runs-on: ubuntu-latest
@@ -75,7 +73,6 @@ jobs:
           name: rpm-package-fedora-${{ matrix.fedora-version }}
           path: /root/rpmbuild/RPMS/noarch/*.rpm
 
-  # 3. Збірка DEB для різних версій Ubuntu
   build-deb:
     needs: test
     runs-on: ubuntu-latest
@@ -120,7 +117,6 @@ jobs:
           name: deb-package-ubuntu-${{ matrix.ubuntu-version }}
           path: build/*.deb
 
-  # 4. Створення GitHub Release
   release:
     needs: [ build-rpm, build-deb ]
     if: startsWith(github.ref, 'refs/tags/v')
