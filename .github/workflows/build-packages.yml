@@ -11,8 +11,7 @@ jobs:
   build-rpm:
     runs-on: ubuntu-latest
     container: fedora:latest
-
-steps:
+    steps:
       - uses: actions/checkout@v4
 
       - name: Install build tools
@@ -22,7 +21,7 @@ steps:
       - name: Setup RPM build environment
         run: rpmdev-setuptree
 
-- name: Prepare sources
+      - name: Prepare sources
         run: |
           mkdir -p ~/rpmbuild/SOURCES/count-files-1.0
           cp count_files.sh ~/rpmbuild/SOURCES/count-files-1.0/
@@ -41,7 +40,7 @@ steps:
           name: rpm-package
           path: ~/rpmbuild/RPMS/noarch/*.rpm
 
-build-deb:
+  build-deb:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -57,7 +56,7 @@ build-deb:
           cp count_files.sh build/count-files-1.0/
           cp -r packaging/deb/debian build/count-files-1.0/
 
-- name: Build DEB
+      - name: Build DEB
         run: |
           cd build/count-files-1.0
           dpkg-buildpackage -us -uc -b
