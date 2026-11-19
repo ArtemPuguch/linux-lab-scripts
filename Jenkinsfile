@@ -57,6 +57,7 @@ pipeline {
                     apt-get install -y build-essential debhelper devscripts
                     mkdir -p build/${PACKAGE_NAME}-${PACKAGE_VERSION}
                     cp count_files.sh build/${PACKAGE_NAME}-${PACKAGE_VERSION}/
+                    cp count-files.conf build/${PACKAGE_NAME}-${PACKAGE_VERSION}/
                     cp -r packaging/deb/debian build/${PACKAGE_NAME}-${PACKAGE_VERSION}/
                     cd build/${PACKAGE_NAME}-${PACKAGE_VERSION}
                     dpkg-buildpackage -us -uc -b
