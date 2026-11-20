@@ -41,6 +41,7 @@ pipeline {
                     rpmbuild -ba ~/rpmbuild/SPECS/count-files.spec
                     cp ~/rpmbuild/RPMS/noarch/*.rpm ${WORKSPACE}/
                 '''
+                stash name: 'rpm-package', includes: '*.rpm'
             }
         }
 
@@ -107,14 +108,10 @@ pipeline {
 
     post {
     success {
+        unstash 'rpm-package'
+        unstash 'deb-package'
         archiveArtifacts artifacts: '*.rpm, *.deb'
         echo 'Build completed successfully!'
-    }
-    failure {
-        echo 'Build failed!'
-    }
-    cleanup {
-        cleanWs()
     }
 }
 }
