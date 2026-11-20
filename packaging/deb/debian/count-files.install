@@ -1,2 +1,2 @@
 count_files.sh usr/bin/count_files
-count-files.conf etc/count-files.conf
+count-files.conf etc/
