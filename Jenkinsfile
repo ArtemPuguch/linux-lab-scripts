@@ -56,7 +56,7 @@ pipeline {
                     apt-get update
                     apt-get install -y build-essential debhelper devscripts
                     mkdir -p build/${PACKAGE_NAME}-${PACKAGE_VERSION}
-                    cp count_files.sh build/${PACKAGE_NAME}-${PACKAGE_VERSION}/
+                    cp count_files.sh build/${PACKAGE_NAME}-${PACKAGE_VERSION}/count_files
                     cp count-files.conf build/${PACKAGE_NAME}-${PACKAGE_VERSION}/
                     cp -r packaging/deb/debian build/${PACKAGE_NAME}-${PACKAGE_VERSION}/
                     cd build/${PACKAGE_NAME}-${PACKAGE_VERSION}
@@ -98,7 +98,6 @@ pipeline {
                     dpkg -i ${PACKAGE_NAME}_*.deb || apt-get install -f -y
                     ls -l /usr/bin/count_files
                     stat -c '%a %A %n' /usr/bin/count_files
-                    file /usr/bin/count_files
                     count_files
                     apt-get remove -y ${PACKAGE_NAME}
                 '''
