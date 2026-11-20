@@ -129,6 +129,18 @@ pipeline {
         unstash 'deb-package'
         archiveArtifacts artifacts: '*.rpm, *.deb'
         echo 'Build completed successfully!'
+
+        mail to: 'artempuguch9@gmail.com',
+             subject: "SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+             body: "Build completed successfully!\n\nBuild URL: ${env.BUILD_URL}"
+    }
+
+    failure {
+        echo 'Build failed!'
+
+        mail to: 'artempuguch9@gmail.com',
+             subject: "FAILURE: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+             body: "Build failed!\n\nBuild URL: ${env.BUILD_URL}"
     }
 }
 }
