@@ -106,15 +106,15 @@ pipeline {
     }
 
     post {
-        success {
-            archiveArtifacts artifacts: '*.rpm, *.deb'
-            echo 'Build completed successfully!'
-        }
-        failure {
-            echo 'Build failed!'
-        }
-        always {
-            cleanWs()
-        }
+    success {
+        archiveArtifacts artifacts: '*.rpm, *.deb'
+        echo 'Build completed successfully!'
     }
+    failure {
+        echo 'Build failed!'
+    }
+    cleanup {
+        cleanWs()
+    }
+}
 }
