@@ -23,54 +23,64 @@ pipeline {
         }
 
         stage('Static Analysis (ShellCheck)') {
-            steps {
-                sh 'shellcheck count_files.sh'
-            }
+    agent {
+        docker {
+            image 'linux-lab-scripts-jenkins-agent:latest'
+            args '-u jenkins'
         }
+    }
+    steps {
+        sh 'shellcheck count_files.sh'
+    }
+}
 
-        stage('Build RPM') {
-            agent {
-                docker {
-                    image 'fedora:latest'
-                    args '-u root'
+        stage('Build Packages') {
+            parallel {
+                stage('Build RPM') {
+                    agent {
+                        docker {
+                            image 'fedora:latest'
+                            args '-u root'
+                        }
+                    }
+                    steps {
+                        sh '''
+                            dnf install -y rpm-build rpmdevtools
+                            rpmdev-setuptree
+                            mkdir -p ~/rpmbuild/SOURCES/${PACKAGE_NAME}-${PACKAGE_VERSION}
+                            cp count_files.sh ~/rpmbuild/SOURCES/${PACKAGE_NAME}-${PACKAGE_VERSION}/
+                            cd ~/rpmbuild/SOURCES
+                            tar czvf ${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz ${PACKAGE_NAME}-${PACKAGE_VERSION}
+                            cp ${WORKSPACE}/packaging/rpm/count-files.spec ~/rpmbuild/SPECS/
+                            rpmbuild -ba ~/rpmbuild/SPECS/count-files.spec
+                            cp ~/rpmbuild/RPMS/noarch/*.rpm ${WORKSPACE}/
+                        '''
+                        stash name: 'rpm-package', includes: '*.rpm'
+                    }
                 }
-            }
-            steps {
-                sh '''
-                    dnf install -y rpm-build rpmdevtools
-                    rpmdev-setuptree
-                    mkdir -p ~/rpmbuild/SOURCES/${PACKAGE_NAME}-${PACKAGE_VERSION}
-                    cp count_files.sh ~/rpmbuild/SOURCES/${PACKAGE_NAME}-${PACKAGE_VERSION}/
-                    cd ~/rpmbuild/SOURCES
-                    tar czvf ${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz ${PACKAGE_NAME}-${PACKAGE_VERSION}
-                    cp ${WORKSPACE}/packaging/rpm/count-files.spec ~/rpmbuild/SPECS/
-                    rpmbuild -ba ~/rpmbuild/SPECS/count-files.spec
-                    cp ~/rpmbuild/RPMS/noarch/*.rpm ${WORKSPACE}/
-                '''
-                stash name: 'rpm-package', includes: '*.rpm'
-            }
-        }
 
-        stage('Build DEB') {
-            agent {
-                docker {
-                    image 'ubuntu:latest'
-                    args '-u root'
+                stage('Build DEB') {
+                    agent {
+                        docker {
+                            image 'ubuntu:latest'
+                            args '-u root'
+                        }
+                    }
+                    steps {
+                        sh '''
+                            apt-get update
+                            apt-get install -y build-essential debhelper devscripts
+                            mkdir -p build/${PACKAGE_NAME}-${PACKAGE_VERSION}
+                            cp count_files.sh build/${PACKAGE_NAME}-${PACKAGE_VERSION}/count_files
+                            cp count-files.conf build/${PACKAGE_NAME}-${PACKAGE_VERSION}/
+                            cp -r packaging/deb/debian build/${PACKAGE_NAME}-${PACKAGE_VERSION}/
+                            cd build/${PACKAGE_NAME}-${PACKAGE_VERSION}
+                            dpkg-buildpackage -us -uc -b
+                            cp ../*.deb ${WORKSPACE}/
+                        '''
+                        stash name: 'deb-package', includes: '*.deb'
+                    }
                 }
-            }
-            steps {
-                sh '''
-                    apt-get update
-                    apt-get install -y build-essential debhelper devscripts
-                    mkdir -p build/${PACKAGE_NAME}-${PACKAGE_VERSION}
-                    cp count_files.sh build/${PACKAGE_NAME}-${PACKAGE_VERSION}/count_files
-                    cp count-files.conf build/${PACKAGE_NAME}-${PACKAGE_VERSION}/
-                    cp -r packaging/deb/debian build/${PACKAGE_NAME}-${PACKAGE_VERSION}/
-                    cd build/${PACKAGE_NAME}-${PACKAGE_VERSION}
-                    dpkg-buildpackage -us -uc -b
-                    cp ../*.deb ${WORKSPACE}/
-                '''
-                stash name: 'deb-package', includes: '*.deb'
             }
         }
 
@@ -82,6 +92,7 @@ pipeline {
                 }
             }
             steps {
+                unstash 'rpm-package'
                 sh '''
                     dnf install -y findutils
                     rpm -ivh ${PACKAGE_NAME}-*.rpm
