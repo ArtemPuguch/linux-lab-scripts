@@ -121,6 +121,30 @@ pipeline {
                 '''
             }
         }
+
+        stage('Publish Packages') {
+            agent {
+                label 'agent-1'
+            }
+            steps {
+                unstash 'rpm-package'
+                unstash 'deb-package'
+
+                sh '''
+                    mkdir -p /var/jenkins_repository/rpm
+                    mkdir -p /var/jenkins_repository/deb
+
+                    cp -v *.rpm /var/jenkins_repository/rpm/
+                    cp -v *.deb /var/jenkins_repository/deb/
+
+                    echo "Опубликованные RPM-пакеты:"
+                    ls -lh /var/jenkins_repository/rpm/
+
+                    echo "Опубликованные DEB-пакеты:"
+                    ls -lh /var/jenkins_repository/deb/
+                '''
+            }
+        }
     }
 
     post {
