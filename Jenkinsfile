@@ -52,7 +52,7 @@ pipeline {
                             cp ${WORKSPACE}/packaging/rpm/count-files.spec ~/rpmbuild/SPECS/
                             rpmbuild -ba ~/rpmbuild/SPECS/count-files.spec
                             cp ~/rpmbuild/RPMS/noarch/*.rpm ${WORKSPACE}/
-                            chown jenkins:jenkins ${WORKSPACE}/*.rpm
+                            chown 1000:1000 ${WORKSPACE}/*.rpm
                         '''
                         stash name: 'rpm-package', includes: '*.rpm'
                     }
