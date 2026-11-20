@@ -63,6 +63,7 @@ pipeline {
                     dpkg-buildpackage -us -uc -b
                     cp ../*.deb ${WORKSPACE}/
                 '''
+                stash name: 'deb-package', includes: '*.deb'
             }
         }
 
@@ -91,6 +92,7 @@ pipeline {
                 }
             }
             steps {
+                unstash 'deb-package'
                 sh '''
                     apt-get update
                     dpkg -i ${PACKAGE_NAME}_*.deb || apt-get install -f -y
