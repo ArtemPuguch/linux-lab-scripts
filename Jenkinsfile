@@ -38,6 +38,7 @@ pipeline {
                         docker {
                             image 'fedora:latest'
                             args '-u root'
+                            label 'agent-rpm'
                         }
                     }
                     steps {
@@ -61,6 +62,7 @@ pipeline {
                         docker {
                             image 'ubuntu:latest'
                             args '-u root'
+                            label 'agent-cpp'
                         }
                     }
                     steps {
