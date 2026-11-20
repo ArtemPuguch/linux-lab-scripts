@@ -96,6 +96,9 @@ pipeline {
                 sh '''
                     apt-get update
                     dpkg -i ${PACKAGE_NAME}_*.deb || apt-get install -f -y
+                    ls -l /usr/bin/count_files
+                    stat -c '%a %A %n' /usr/bin/count_files
+                    file /usr/bin/count_files
                     count_files
                     apt-get remove -y ${PACKAGE_NAME}
                 '''
