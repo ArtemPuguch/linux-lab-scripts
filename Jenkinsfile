@@ -23,16 +23,13 @@ pipeline {
         }
 
         stage('Static Analysis (ShellCheck)') {
-    agent {
-        docker {
-            image 'linux-lab-scripts-jenkins-agent:latest'
-            args '-u jenkins'
+            agent {
+                label 'agent-1'
+            }
+            steps {
+                sh 'shellcheck count_files.sh'
+            }
         }
-    }
-    steps {
-        sh 'shellcheck count_files.sh'
-    }
-}
 
         stage('Build Packages') {
             parallel {
