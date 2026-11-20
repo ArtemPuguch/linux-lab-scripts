@@ -1,4 +1,4 @@
 #!/bin/bash
 echo "Кількість файлів у /etc:"
-ls -1 /etc | wc -l
+find /etc -maxdepth 1 -type f | wc -l
 # Оновлено під час виконання самостійної роботи

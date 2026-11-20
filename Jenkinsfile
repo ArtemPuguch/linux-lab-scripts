@@ -22,6 +22,12 @@ pipeline {
             }
         }
 
+        stage('Static Analysis (ShellCheck)') {
+            steps {
+                sh 'shellcheck count_files.sh'
+            }
+        }
+
         stage('Build RPM') {
             agent {
                 docker {
